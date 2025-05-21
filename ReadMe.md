@@ -1,0 +1,1 @@
+Solving systems of linear equations in which the matrix\ (NxN) contains k diagonals, and the remaining elements are equal to zero. In this case, the elements on the main diagonal must be non-zero, the value of the elements on the other diagonals can be any
