@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/penta_test.dir/k_test.cpp.o -o penta_test  -Wl,-rpath,/home/KdiagonalSolver/test/build liblibKdiagonalSOlver.so 
