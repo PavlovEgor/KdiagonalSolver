@@ -1,4 +1,0 @@
-/home/KdiagonalSolver/test/build/CMakeFiles/libKdiagonalSOlver.dir
-/home/KdiagonalSolver/test/build/CMakeFiles/k_test.dir
-/home/KdiagonalSolver/test/build/CMakeFiles/edit_cache.dir
-/home/KdiagonalSolver/test/build/CMakeFiles/rebuild_cache.dir
