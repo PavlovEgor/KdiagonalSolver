@@ -27,12 +27,12 @@
 This text will describe an algorithm for solving systems of linear equations of the form:
 \begin{equation}
 \begin{bmatrix}
-a_{00} & a_{01} & ... & a_{0k} & 0 &... & 0 \\
-a_{10} & a_{11} & ... & a_{1k} & a_{1 (k+1)} &... & 0 \\
+a_{00} & a_{01} & ... & a_{0k_2} & 0 &... & 0 \\
+a_{10} & a_{11} & ... & a_{1k_2} & a_{1 (k_2+1)} &... & 0 \\
 ... & ... & ... & ... & ... &... & ... \\
-a_{k0} & a_{k1} & ... & a_{kk} & a_{k(k+1)} &... & 0 \\
+a_{k_10} & a_{k_11} & ... & a_{k_1k_2} & a_{k_1(k_2+1)} &... & 0 \\
 ... & ... & ... & ... & ... &... & ... \\
-0 & 0 & ... & 0 & 0 &... & a_{(N-k)(N-1)} \\
+0 & 0 & ... & 0 & 0 &... & a_{(N-k_2)(N-1)} \\
 ... & ... & ... & ... & ... &... & ... \\
 0 & 0 & ... & 0 & 0 &... & a_{(N-2)(N-1)} \\
 0 & 0 & ... & 0 & 0 &... & a_{(N-1)(N-1)}
@@ -62,76 +62,76 @@ b_{N-1} \\
 For ease of representation and analysis, each diagonal will be considered as a one-dimensional array, which must be supplemented with zero elements until it reaches length N, if we are talking about the upper diagonal, or from the beginning, if we are talking about the lower diagonal:
 \begin{equation}
 \begin{cases}
-    U_{ji} = a_{i (j + i)}, \;\; 0 \leq i \leq N - j, \;\; U_{ji} = 0, \;\; N - j + 1 \leq i \leq N-1, \;\;\text{where} \;\; 1 \leq j \leq k  \\
-    L_{ji} = 0, \;\; 0 \leq i \leq j - 1, \;\; L_{ji} = a_{(j + i) i}, \;\; j \leq i \leq N - 1, \;\;\text{where} \;\; 1 \leq j \leq k  \\
+    U_{ji} = a_{i (j + 1 + i)}, \;\; 0 \leq i \leq N - 1 - j, \;\; U_{ji} = 0, \;\; N - j  \leq i \leq N-1, \;\;\text{where} \;\; 0 \leq j \leq k_2-1  \\
+    L_{ji} = 0, \;\; 0 \leq i \leq j, \;\; L_{ji} = a_{(j + 1 + i) i}, \;\; j + 1 \leq i \leq N - 1, \;\;\text{where} \;\; 0 \leq j \leq k_1-1  \\
 \end{cases}
 \end{equation}
 Then the system of equations can be rewritten in a simple form:
 
 \begin{equation}
-    \sum_{l = 1}^{k} L_{li} x_{(i-l)} + a_{ii} x_{i} + \sum_{l = 1}^{k} U_{li} x_{(i+l)} = b_i, \;\;\text{where} \;\; 0 \leq i \leq N-1
+    \sum_{l = 0}^{k_1 - 1} L_{li} x_{(i-l)} + a_{ii} x_{i} + \sum_{l = 0}^{k_2 - 1} U_{li} x_{(i+l)} = b_i, \;\;\text{where} \;\; 0 \leq i \leq N-1
 \end{equation}
 In this form, $x$ has indices that go beyond the formal limits of $0,\; N-1$, but this is not so important given the zero values of the coefficients at these points. As mentioned earlier, $a_{ii}$ is not zero, so we divide the corresponding equations by them:
 \begin{equation}\label{4}
-    \sum_{l = 1}^{k} L_{li} x_{(i-l)}  + x_{i} + \sum_{l = 1}^{k} U_{li} x_{(i+l)} = b_i, \;\;\text{where} \;\; 0 \leq i \leq N-1
+    \sum_{l = 0}^{k_1 - 1} L_{li} x_{(i-l)}  + x_{i} + \sum_{l = 0}^{k_2 - 1} U_{li} x_{(i+l)} = b_i, \;\;\text{where} \;\; 0 \leq i \leq N-1
 \end{equation}
 where used the new definition of $U$ and $L$:
 \begin{equation}
 \begin{cases}
-    U_{ji} = a_{i (j + i)} / a_{ii}, \;\; 0 \leq i \leq N - j, \;\; U_{ji} = 0, \;\; N - j + 1 \leq i \leq N-1, \;\;\text{where} \;\; 1 \leq j \leq k  \\
-    L_{ji} = 0, \;\; 0 \leq i \leq j - 1, \;\; L_{ji} = a_{(j + i) i} / a_{ii}, \;\; j \leq i \leq N - 1, \;\;\text{where} \;\; 1 \leq j \leq k  \\
+    U_{ji} = a_{i (j + 1 + i)} / a_{ii}, \;\; 0 \leq i \leq N - j - 1, \;\; U_{ji} = 0, \;\; N - j \leq i \leq N-1, \;\;\text{where} \;\; 1 \leq j \leq k_2  \\
+    L_{ji} = 0, \;\; 0 \leq i \leq j, \;\; L_{ji} = a_{(j + 1 + i) i} / a_{ii}, \;\; j + 1 \leq i \leq N - 1, \;\;\text{where} \;\; 0 \leq j \leq k_1  \\
 \end{cases}
 \end{equation}
 
-We will express $x_i$ in terms of a linear combination of $x_{i+1}, \;..., x_{i+k}$: 
+We will express $x_i$ in terms of a linear combination of $x_{i+1}, \;..., x_{i+k_2}$: 
 \begin{equation}\label{6}
-    x_i = \sum_{l=1}^k P_{il} x_{i+l} + R_{i}
+    x_i = \sum_{l=0}^{k_2 - 1} P_{il} x_{i+l + 1} + R_{i}
 \end{equation}
 For $i = 0$, the values of $P$ and $R$ are obviously expressed in terms of $U$ and $b$:
 \begin{equation}
-    P_{0l} = U_{0l}, \;\; 1 \leq l \leq k, \;\; R_0 = b_0
+    P_{0l} = -U_{l0}, \;\; 0 \leq l \leq k_2-1, \;\; R_0 = b_0
 \end{equation}
-For the remaining $i$, we introduce additional values $Q^{i}$ and $W^{i}$ in such a way that:
+For the remaining $i$, we introduce additional values $Q^{i}_{(.)(.)}$ and $W^{i}_{(.)}$ in such a way that:
 \begin{equation}\label{8}
-    x_{i-l} = \sum_{j = 0}^{k-1} Q^{i}_{lj} x_{i + j} + W^{i}_l
+    x_{i-l} = \sum_{j = 0}^{k_2-1} Q^{i}_{lj} x_{i + j} + W^{i}_l
 \end{equation}
-For $l = 1$:
+Where $0 \leq l \leq k_1$. For $l = 1$:
 \begin{equation}
-    x_{i-1} = \sum_{j = 0}^{k-1} P_{(i-1)(j+1)} x_{i + j} + R_{i-1}
+    x_{i-1} = \sum_{j = 0}^{k_2-1} P_{(i-1)j} x_{i + j} + R_{i-1}
 \end{equation}
-Where do we find $Q^{i}_{1} $ and $W^i_{1}$:
+Where do we find $Q^{i}_{1(.)} $ and $W^i_{1}$:
 \begin{equation}
-    Q^i_{1j} = P_{(i-1)(j+1)}, \;\; 0 \leq j \leq k-1, \;\; W^i_{1} = R_{i-1}
+    Q^i_{1j} = P_{(i-1)j}, \;\; 0 \leq j \leq k_2-1, \;\; W^i_{1} = R_{i-1}
 \end{equation}
  Returning to the form (\ref{6}) and decomposing the sum into two parts (after $x_i$ and before).
 \begin{multline}
-        x_{i-l} = \sum_{j = 0}^{k-1} P_{(i-l)(j+1)} x_{i - l + j + 1} + R_{i-l} = \\ = R_{i-l} +  \sum_{j = l}^{k-1} P_{(i-l)(j+1)} x_{i - l + j + 1} + P_{(i-l)(l)}x_i  + \sum_{j = 0}^{l-2} P_{(i-l)(j+1)}  x_{i - l + j + 1}
+        x_{i-l} = \sum_{j = 0}^{k_2-1} P_{(i-l)j} x_{i - l + j + 1} + R_{i-l} = \\ = R_{i-l} +  \sum_{j = l}^{k_2-1} P_{(i-l)j} x_{i - l + j + 1} + P_{(i-l)(l-1)}x_i  + \sum_{j = 0}^{l-2} P_{(i-l)j}  x_{i - l + j + 1}
 \end{multline}
 
 Now we use (\ref{8}) for $x$ in the second sum:
 
 \begin{multline}
-    x_{i-l} = R_{i-l} +  \sum_{j = 0}^{k-1 - l} P_{(i-l)(l + j+1)} x_{i + j + 1} + P_{(i-l)(l)}x_i + \\ + \sum_{j = 0}^{l-2} P_{(i-l)(j+1)} \Big(\sum_{p = 0}^{k-1} Q^{i - (l - j - 1)}_{(l - j - 1)p} x_{i + p} + W^{i - (l - j - 1)}_{l - j - 1} \Big)
+    x_{i-l} = R_{i-l} +  \sum_{j = 0}^{k_2-1 - l} P_{(i-l)(l + j)} x_{i + j + 1} + P_{(i-l)(l-1)}x_i + \\ + \sum_{j = 0}^{l-2} P_{(i-l)j} \Big(\sum_{p = 0}^{k_2-1} Q^{i}_{(l - j - 1)p} x_{i + p} + W^{i}_{l - j - 1} \Big)
 \end{multline}
 
-As a result, we get the expression for $Q^{i}_{l(.)}$ and $W^{i}_{l}$ through $Q^{i}_{l-p}$, $W^{i}_{l-p}$, $P_{(i-p)(.)}$ and $R_{i-p}$ where $1 \leq p$:
+As a result, we get the expression for $Q^{i}_{l(.)}$ and $W^{i}_{l}$ through $Q^{i}_{(l-p)(.)}$, $W^{i}_{l-p}$, $P_{(i-p)(.)}$ and $R_{i-p}$ where $1 \leq p$:
 
 Now let's go back to the form (\ref{4}), rewriting it as:
 \begin{equation}
-      x_{i}  = b_i - \sum_{l = 1}^{k} U_{li} x_{(i+l)} - \sum_{l = 1}^{k} L_{li} x_{(i-l)} =  b_i - \sum_{l = 1}^{k} U_{li} x_{(i+l)} - \sum_{l = 1}^{k} L_{li} \Big( \sum_{j = 0}^{k-1} Q^{i}_{lj} x_{i + j} + W^{i}_l\Big)
+      x_{i}  = b_i - \sum_{l = 0}^{k_2 - 1} U_{li} x_{(i+l + 1)} - \sum_{l = 0}^{k_1 - 1} L_{li} x_{(i-l - 1)} =  b_i - \sum_{l = 0}^{k_2 - 1} U_{li} x_{(i+l + 1)} - \sum_{l = 0}^{k_1 - 1} L_{li} \Big( \sum_{j = 0}^{k_2-1} Q^{i}_{(l + 1)j} x_{i + j} + W^{i}_{(l + 1)}\Big)
 \end{equation}
 Moving all $x_i$ to the left side, we find the new $P_{(i)(.)}$ and $R_i$:
 
 \begin{equation}
-      x_{i} \Big( 1 +  \sum_{l = 1}^{k} L_{li} Q^{i}_{l0} \Big)  =  b_i - \sum_{l = 1}^{k} U_{li} x_{(i+l)} - \sum_{l = 1}^{k} L_{li} \Big( \sum_{j = 1}^{k-1} Q^{i}_{lj} x_{i + j} + W^{i}_l\Big)
+      x_{i} \Big( 1 +  \sum_{l = 0}^{k_1 - 1} L_{li} Q^{i}_{(l+1)0} \Big)  =  b_i - \sum_{l = 0}^{k_2 - 1} U_{li} x_{(i+l + 1)} - \sum_{l = 0}^{k_1 -1} L_{li} \Big( \sum_{j = 1}^{k_2-1} Q^{i}_{(l+1)j} x_{i + j} + W^{i}_{(l+1)}\Big)
 \end{equation}
 For $i = N-1$:
 \begin{equation}
-    x_{N-1} = \Big(b_{N-1} - \sum_{l = 1}^{k} L_{l(N-1)}W^{N-1}_l\Big) / \Big( 1 +  \sum_{l = 1}^{k} L_{l (N-1)} Q^{N-1}_{l0}\Big) 
+    x_{N-1} = \Big(b_{N-1} - \sum_{l = 0}^{k_1 - 1} L_{l(N-1)}W^{N-1}_{(l+1)}\Big) / \Big( 1 +  \sum_{l = 0}^{k_1 - 1} L_{l (N-1)} Q^{N-1}_{(l + 1)0}\Big) 
 \end{equation}
-Knowing $x_{N-1}$ and $P_{i(.)}$, $R_i$ you can restore all $x_i$ in reverse order. Thus, to calculate N values, it is necessary to calculate the order of $\sim k^2$ auxiliary values at each step, hence the total complexity of the algorithm:
+Knowing $x_{N-1}$ and $P_{i(.)}$, $R_i$ you can restore all $x_i$ in reverse order. Thus, to calculate N values, it is necessary to calculate the order of $\sim k_1 k_2$ auxiliary values at each step, hence the total complexity of the algorithm:
 \begin{equation}
-    O(Nk^2)
+    O(Nk_1k_2)
 \end{equation}
 Since the usual algorithms for direct solution of systems of linear equations have complexity $O(N^3)$, the resulting algorithm is efficient for any $k$.
 \end{document}
