@@ -44,15 +44,17 @@ int main(){
                     
     KdiagonalSolver test_LS = KdiagonalSolver(_matrix, ind, B);
 
-    // test_LS.solve(x);
+    test_LS.solve(x);
 
-    for (int i = 0; i < 10; i++)
+    std::cout.precision(9);
+
+    for ( int i = 0; i < 10; i++)
     {
-        printf("%3.8f ", x[i]);
+        std::cout << x[i] <<" ";
     }
-    printf("\n");
+    std::cout << std::endl; 
 
-    printf("-1.06064525 2.14129119 -2.47122364 2.71218541 0.03613519 -0.48000190 0.02015260 -0.75710842 2.58505392 -1.81705365 \n");
+    std::cout << "-1.06064525 2.14129119 -2.47122364 2.71218541 0.03613519 -0.48000190 0.02015260 -0.75710842 2.58505392 -1.81705365" << std::endl;
 
     return 0;
 }

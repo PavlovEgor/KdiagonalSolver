@@ -1,240 +1,185 @@
 #include "KdiagonalSolver.hpp"
 #include <cstdlib>
 #include <iostream>
-
+#include <algorithm> // std::min_element
+#include <iterator>  // std::begin, std::end
 
 using std::vector;
 
 KdiagonalSolver::KdiagonalSolver(
-    const vector<vector<double>>& _diagonals, 
-    const vector<int>& _indexes,
-    const vector<double> _B)
+    const vector<vector<double>>& diagonals, 
+    const vector<int>& indexes,
+    const vector<double> _B) :
+    B(_B)
 {
-    indexes     = std::move(_indexes);
-    B           = _B;
+    int i, j, count_of_diag;
+    vector<double> Main_diagonal(N);
 
+    count_of_diag = indexes.size();
     N = B.size();
-    vector<double> zero_N(N, 0);
-    
-    diagonals.reserve(indexes.size());
-    std::fill(diagonals.begin(), diagonals.end(), zero_N);
+    k_low = -*std::min_element(std::begin(indexes), std::end(indexes));
+    k_up = *std::max_element(std::begin(indexes), std::end(indexes));
 
-    k = 0;
-    int ind_0;
+    Lower_diagonals.resize(k_low, vector<double>(N, 0.0));
+    Upper_diagonals.resize(k_up, vector<double>(N, 0.0));
 
-    
+    for (j = 0; j < count_of_diag; j++)
+    {
+        if (indexes[j] < 0){
 
-    for (int i = 0; i < indexes.size(); i++)
-    {   
-    std::cout << "SEX" << std::endl;
-
-        if (k < abs(indexes.at(i)))
-        {
-            k = abs(indexes.at(i));
-        }
-        
-        if (indexes.at(i) < 0){
-            for (int j=i; j < N; j++)
+            for (i=-indexes[j]; i < N; i++)
             {
-                diagonals[i][j] += _diagonals[i][j-i];
+                Lower_diagonals[-indexes[j] - 1][i] += diagonals[j][i + indexes[j]];
             }
-        } else if (indexes.at(i) == 0)
+
+        } else if (indexes[j] == 0)
         {
-            ind_0 = indexes.at(i);
+            Main_diagonal = diagonals[j];
         }
         
         else {
-            for (int j=0; j < N-i; j++)
+            for (i=0; i < N-indexes[j]; i++)
             {
-                diagonals[i][j] += _diagonals[i][j];
+                Upper_diagonals[indexes[j] - 1][i] += diagonals[j][i];
             }
         }
     }
-
-    for (int i = 0; i < N; i++)
-    {
-        diagonals[ind_0][i] = 1;
-        B[i] /= _diagonals[ind_0][i];
-
-        for (int j = 0; j < indexes.size(); j++)
-        {
-            diagonals[j][i] /= _diagonals[ind_0][i];
-        }
-    }
-
     
+
+    for (i = 0; i < N; i++)
+    {
+        B[i] /= Main_diagonal[i];
+
+        for (j = 0; j < k_low; j++)
+        {
+            Lower_diagonals[j][i] /= Main_diagonal[i];
+        }
+        for (j = 0; j < k_up; j++)
+        {
+            Upper_diagonals[j][i] /= Main_diagonal[i];
+        }
+    }    
 }
 
-KdiagonalSolver::~KdiagonalSolver(){}
+KdiagonalSolver::~KdiagonalSolver(){
+}
 
-void KdiagonalSolver::solve(vector<double> x){
+void KdiagonalSolver::solve(vector<double>& x){
     int i, j, l, p;
     double frac, sum, tmp;
 
-    vector<double> zero_k(k, 0);
-    vector<vector<double>> P(N, zero_k);
+    vector<vector<double>> P(N, vector<double>(k_up, 0.0));
     vector<double> R(N, 0);
 
-    vector<vector<double>> P2(k+1, zero_k);
-    vector<double> R2(k+1, 0);
-
+    vector<vector<double>> Q(k_low+1, vector<double>(k_up, 0.0));
+    vector<double> W(k_low+1, 0);
 
     R[0] = B[0];
-    for (i = 0; i < indexes.size(); i++)
-    {
-        if (indexes[i] > 0)
-        {
-            P[0][indexes[i]] = diagonals[i][0];
-        }
+    for (l = 0; l < k_up; l++){
+        P[0][l] = -Upper_diagonals[l][0];
     }
 
-    for (i=1; i < N-1; i++)
+
+    for (i=1; i < N; i++)
     {
+        Q[0][0] = 1;
+        W[0] = 0;
         
-        for (j=0; j<k; j++)
+        for (j=0; j<k_up; j++)
         {
-            P2[0][j] = 0;
-            P2[1][j] = P[i-1][j];
+            Q[0][j] = 0;
+            Q[1][j] = P[i-1][j];
         }
+        W[1] = R[i-1];
 
-        P2[0][0] = 1;
-        R2[0] = 0;
-        R2[1] = R[i-1];
-
-        for (j=2; j < k+1; j++)
+        for (l=2; l <= k_low; l++)
         {
-            for (l = 0; l < k - j + 1; l++)
-            {
-                P2[j][l] = P[i - j][j-1 + l];
+            if (i - l < 0){
+                break;
             }
-            for (l = k-j+1; l < k; l++)
-            {
-                P2[j][l] = 0;
-            }
-            
-            R2[j] = R[i-j];
 
-            for (l=1; l < j; l++)
+            W[l] = R[i - l];
+
+            for (j = 0; j < k_up; j++)
             {
-                tmp = P[i - j][j - l - 1];
-                for (p=0; p < k; p++)
-                {
-                    P2[j][p] += tmp * P2[l][p];
-                }
-                R2[j] += tmp * R2[l];
+                Q[l][j] = 0;
             }
+
+            Q[l][0] = P[i-l][l - 1];
+
+            for (j = 0; j < k_up - l; j++)
+            {
+                Q[l][j + 1] = P[i-l][l + j];
+            }
+
+            for (j = 0; j <= l - 2; j++)
+            {
+                W[l] += P[i-l][j] * W[l-j-1];
+
+                for (p = 0; p < k_up; p++)
+                {
+                    Q[l][p] += Q[l - j - 1][p] * P[i - l][j];
+                }
+            }            
         }
 
         sum = 1;
-        for (j = 0; j < indexes.size(); j++)
+        for (l = 0; l < k_low; l++)
         {
-            if (indexes[j] < 0)
+            sum += Lower_diagonals[l][i] * Q[l+1][0];
+        }
+        frac = 1 / sum;
+
+        if (i != N-1) {
+        sum = B[i];
+        for (l = 0; l < k_up; l++)
+        {
+            sum -= Lower_diagonals[l][i] * W[l + 1];
+        }
+
+        R[i] = sum * frac;
+
+        for (j = 0; j < k_up; j++)
+        {
+            P[i][j] -= Upper_diagonals[j][i];
+        }
+
+        for (j = 0; j < k_up-1; j++)
+        {
+            for (l = 0; l < k_low; l++)
             {
-                sum += P2[-indexes[j]][0] * diagonals[j][i];
+                P[i][j] -= Lower_diagonals[l][i] * Q[l+1][j+1];
             }
-        }
 
-        frac /= sum;
-
-        for (j = 0; j < indexes.size(); j++)
-        {
-            if (indexes[j] > 0){
-                P[i][indexes[j]-1] = - diagonals[j][i] * frac;
-            }
+            P[i][j] *= frac;
         }
-        R[i] = B[i] * frac;
+        P[i][k_up-1] *= frac;
         
-        for (j = 0; j < indexes.size(); j++)
-        {
-            if (indexes[j] > 0){
-                for (l = 0; l < indexes.size(); l++)
-                {
-                    if (indexes[l] < 0)
-                    {
-                        P[i][indexes[j]-1] -= diagonals[l][i] * P2[-indexes[l]][indexes[j]] * frac;
-                    }
-                    
-                }
-                
-
-            }
-        }
-
-        for ( j = 0; j < indexes.size(); j++)
-        {
-            if (indexes[j] < 0){
-                R[i] -= diagonals[j][i] * R2[indexes[j]] * frac;
-            }
-        }
-        
-
-    }
-
-    for (j=0; j<k; j++)
+    } else if (i == N-1)
     {
-        P2[0][j] = 0;
-        P2[1][j] = P[N-2][j];
+        x[N-1] = B[N-1];
+        for (l = 0; l < k_low; l++)
+        {
+            x[N-1] -= Lower_diagonals[l][N-1] * W[l+1];
+        }
+        x[N-1] *= frac;
+    }
     }
 
-    P2[0][0] = 1;
-    R2[0] = 0;
-    R2[1] = R[N-2];
 
-    for (j=2; j < k+1; j++)
-    {
-        for (l = 0; l < k - j + 1; l++)
-        {
-            P2[j][l] = P[N - 1 - j][j-1 + l];
-        }
-        for (l = k-j+1; l < k; l++)
-        {
-            P2[j][l] = 0;
-        }
-        
-        R2[j] = R[N - 1 - j];
-
-        for (l=1; l < j; l++)
-        {
-            tmp = P[N - 1 - j][j - l - 1];
-            for (p=0; p < k; p++)
-            {
-                P2[j][p] += tmp * P2[l][p];
-            }
-            R2[j] += tmp * R2[l];
-        }
-    }
-
-    sum = 1;
-    for (j = 0; j < indexes.size(); j++)
-    {
-        if (indexes[j] < 0)
-        {
-            sum += P2[-indexes[j]][0] * diagonals[j][N-1];
-        }
-    }
-    x[N-1] = B[N-1];
-
-    for (j = 0; j < indexes.size(); j++)
-    {
-        if (indexes[j] < 0){
-            x[N-1] -= diagonals[j][N-1] * R2[-indexes[j]];
-        }
-    }
-    x[N-1] /= sum;
-
-    for (i = N-2; i > N - k - 1; i--)
+    for (i = N-2; i > N - k_up - 1; i--)
     {
         x[i] = R[i];
-        for (j=0; j<N - i - 1; j++)
+        for (j=0; j < N - i - 1; j++)
         {
             x[i] += P[i][j] * x[i + 1 + j];
         }
     }
 
-    for (i = N - k - 1; i >= 0; i--)
+    for (i = N - k_up - 1; i >= 0; i--)
     {
         x[i] = R[i];
-        for (j=0; j<k; j++)
+        for (j=0; j<k_up; j++)
         {
             x[i] += P[i][j] * x[i + 1 + j];
         }
